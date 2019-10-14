@@ -1,11 +1,9 @@
 # MTGDraftCollectionCalculator
+
 This calculator attempts to estimate the number of BO1 drafts needed to complete one's rare collection in MtG Arena.
 
-The problem of collecting a collection of cards is known as the coupon collector's problem and is discussed, among others, here:
-
-- https://probabilityandstats.wordpress.com/2017/01/18/how-long-does-it-take-to-collect-all-coupons/
-- https://www.mathpages.com/home/kmath437.htm
-- https://math.stackexchange.com/questions/2315285/coupon-collectors-problem-with-x-amount-of-coupons-already-collected
+To do so, a draft is simulated by opening three packs, assuming only the first pack contains a rare. During a draft, as there is no duplicate protection, this rare can be any rare of the complete (draftable) set. A random card is created and checked against the current collection if it is a duplicate. If this is not the case, it is added the collection. After each draft, the amount of boosters owned is incremented by one.
+As soon as the owned boosters exceed the amount of missing cards, the estimation stops.
 
 The first version makes some very naive assumptions:
 * Assume there is a single set of cards (when in reality, 4 sets of all cards can be collected)
@@ -14,7 +12,7 @@ The first version makes some very naive assumptions:
 * Every draft pack has exactly one rare
 * Do not consider buying prizes
   * By expansion, do not care about gems or coins
-* Do not take into account the packs won by finishing a draft
+* Do not take into account the potential additional pack won by finishing a draft (20% for 0 wins, 100% for 7 wins)
 * Do not consider gem rewards
 * Do not consider gem earned if a rare or mythic already collected is picked
 
