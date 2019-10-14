@@ -11,6 +11,23 @@ namespace MTGDraftCollectionCalculator
 
         public int BoosterPacksOwned { get; set; }
 
+        public UserCollection()
+        {
+            BoosterPacksOwned = 0;
+        }
+
+        public UserCollection(UserCollection sourceCollection)
+        {
+            Rares.DraftablesOwned = sourceCollection.Rares.DraftablesOwned;
+            Rares.NonDraftablesOwned = sourceCollection.Rares.NonDraftablesOwned;
+
+            Wildcards.Owned = sourceCollection.Wildcards.Owned;
+            Wildcards.Progress = sourceCollection.Wildcards.Progress;
+
+            BoosterPacksOwned = sourceCollection.BoosterPacksOwned;
+        }
+
+
         public override string ToString()
         {
             var sb = new StringBuilder();
