@@ -28,4 +28,6 @@ Each draft pack contains approximately:
 
 Additionally, there is a chance of xx% for an additional rare on the second pick of a draft (value determined empirically courtesy of MTGA Tool).
 
+A later version will also try to recommend where to spend the currencies, drafting or buying packs, based on the current collection state.
+
 Not all cards from the collection can be drafted, some rares have to be created by using wildcards. In ELD, there are 276 rares in total, 212 in draft packs (4x 69; 4x 53).
