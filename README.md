@@ -14,7 +14,9 @@ The first version makes some very naive assumptions:
   * By expansion, do not care about gems or coins
 * Do not take into account the potential additional pack won by finishing a draft (20% for 0 wins, 100% for 7 wins)
 * Do not consider gem rewards
-* Do not consider gem earned if a rare or mythic already collected is picked
+* Do not consider gems earned if a rare or mythic already collected is picked
+* Do not consider possible booster packs remaining from mastery path
+  * By expansion, do not consider if the user purchased the mastery pass
 
 For a later version, in addition to the points above, mythics and wildcards in draft packs and booster packs will be considered. The following probabilities will be used:
 
