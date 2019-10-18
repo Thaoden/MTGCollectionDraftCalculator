@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Text.Json;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MTGDraftCollectionCalculator
 {
@@ -14,7 +16,7 @@ namespace MTGDraftCollectionCalculator
 
         static async Task Main(string[] args)
         {
-            var eldraineCollection = await getMtgJsonSet("ELD.json");
+            var eldraineCards = await MtgJsonHelper.GetEldraineSet();
 
             var userCollection = createUserCollection();
             Console.WriteLine(userCollection.ToString());
@@ -24,27 +26,6 @@ namespace MTGDraftCollectionCalculator
             Console.WriteLine($"Estimated runs to complete the rare collection: {draftsNeeded}");
         }
 
-        private static async Task<MtgJsonSet> getMtgJsonSet(string set)
-        {
-            var jsonSerializerOptions = new JsonSerializerOptions
-            {
-                IgnoreNullValues = true,
-                PropertyNameCaseInsensitive = true,
-            };
-            string json = "";
-
-            using var _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri("https://www.mtgjson.com/json/");
-
-            using var response = await _httpClient.GetAsync(set);
-            if (response.IsSuccessStatusCode)
-            {
-                //var collection = await response.Content.ReadAsAsync<MtgJsonSet>();
-                json = await response.Content.ReadAsStringAsync();
-            }
-            var collection = JsonSerializer.Deserialize<MtgJsonSet>(json, jsonSerializerOptions);
-            return collection;
-        }
 
         private static int calculateDrafts(UserCollection userCollection)
         {

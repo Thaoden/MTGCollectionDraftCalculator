@@ -51,7 +51,7 @@ namespace MTGDraftCollectionCalculator
         public bool HasFoil { get; set; }
         public bool HasNoDeckLimit { get; set; }
         public bool HasNonFoil { get; set; }
-        public bool IsAlternativ { get; set; }
+        public bool IsAlternative { get; set; }
         public bool IsArena { get; set; }
         public bool IsFullArt { get; set; }
         public bool IsMtgo { get; set; }
