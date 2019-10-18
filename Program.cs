@@ -8,7 +8,7 @@ namespace MTGDraftCollectionCalculator
     {
         private readonly static Random _rng = new Random();
         private readonly static int _amountOfSimulations = 1000;
-        private readonly static bool _debug = false;
+        private readonly static bool _debug = true;
 
         static void Main(string[] args)
         {
@@ -59,16 +59,17 @@ namespace MTGDraftCollectionCalculator
 
         private static void simulateSinglePack(UserCollection userCollection)
         {
-            var rnd = _rng.Next(SetCollection.Eldraine.Rares.Draftable);
+            var cardDrawn = _rng.Next(SetCollection.Eldraine.Rares.Draftable);
 
             if (_debug)
             {
-                Console.WriteLine($"Current number of owned draftables: {userCollection.Rares.DraftablesOwned}{Environment.NewLine}Opened rare number {rnd}");
+                Console.WriteLine($"Current number of owned draftables: {userCollection.Rares.DraftablesOwned}{Environment.NewLine}Opened rare number {cardDrawn}");
             }
 
-            if (rnd > userCollection.Rares.DraftablesOwned)
+            if (!userCollection.Rares.ContainsDraftable(cardDrawn))
             {
-                userCollection.Rares.DraftablesOwned++;
+                userCollection.Rares.AddDraftable(cardDrawn);
+                Console.WriteLine($"Adding card {cardDrawn} to collection");
             }
         }
 
@@ -76,9 +77,19 @@ namespace MTGDraftCollectionCalculator
         private static UserCollection createUserCollection()
         {
             var userCollection = new UserCollection();
-            userCollection.Rares.NonDraftablesOwned = 0;
-            userCollection.Rares.DraftablesOwned = 16;
-            userCollection.BoosterPacksOwned = 25;
+            int nonDraftablesOwned = 0;
+            int draftablesOwned = 31;
+
+            for (int i = 0; i < nonDraftablesOwned; i++)
+            {
+                userCollection.Rares.AddNonDraftable(i);
+            }
+
+            for(int i = 0; i < draftablesOwned; i++)
+            {
+                userCollection.Rares.AddDraftable(i);
+            }
+            userCollection.BoosterPacksOwned = 33;
             userCollection.Wildcards.Owned = 0;
             userCollection.Wildcards.Progress = 0;
 
