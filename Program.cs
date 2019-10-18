@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace MTGDraftCollectionCalculator
 {
     class Program
     {
         private readonly static Random _rng = new Random();
-        private readonly static int _amountOfSimulations = 1000;
-        private readonly static bool _debug = true;
+        private const int AMOUNT_OF_SIMULATIONS = 1000;
+        private const bool DEBUG = false;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
+            var eldraineCollection = await getMtgJsonSet("ELD.json");
+
             var userCollection = createUserCollection();
             Console.WriteLine(userCollection.ToString());
 
@@ -20,11 +24,33 @@ namespace MTGDraftCollectionCalculator
             Console.WriteLine($"Estimated runs to complete the rare collection: {draftsNeeded}");
         }
 
+        private static async Task<MtgJsonSet> getMtgJsonSet(string set)
+        {
+            var jsonSerializerOptions = new JsonSerializerOptions
+            {
+                IgnoreNullValues = true,
+                PropertyNameCaseInsensitive = true,
+            };
+            string json = "";
+
+            using var _httpClient = new HttpClient();
+            _httpClient.BaseAddress = new Uri("https://www.mtgjson.com/json/");
+
+            using var response = await _httpClient.GetAsync(set);
+            if (response.IsSuccessStatusCode)
+            {
+                //var collection = await response.Content.ReadAsAsync<MtgJsonSet>();
+                json = await response.Content.ReadAsStringAsync();
+            }
+            var collection = JsonSerializer.Deserialize<MtgJsonSet>(json, jsonSerializerOptions);
+            return collection;
+        }
+
         private static int calculateDrafts(UserCollection userCollection)
         {
             int draftsNeeded = 0;
 
-            for (int i = 0; i < _amountOfSimulations; i++)
+            for (int i = 0; i < AMOUNT_OF_SIMULATIONS; i++)
             {
                 int tmpDraftsNeeded = 0;
 
@@ -37,7 +63,7 @@ namespace MTGDraftCollectionCalculator
                 }
 
 
-                if (_debug)
+                if (DEBUG)
                 {
                     Console.WriteLine($"Running simulation {i + 1}, estimating {tmpDraftsNeeded} drafts");
                 }
@@ -45,7 +71,7 @@ namespace MTGDraftCollectionCalculator
                 draftsNeeded += tmpDraftsNeeded;
             }
 
-            return draftsNeeded / _amountOfSimulations;
+            return draftsNeeded / AMOUNT_OF_SIMULATIONS;
         }
 
         private static void simulateSingleDraft(UserCollection userCollection)
@@ -61,7 +87,7 @@ namespace MTGDraftCollectionCalculator
         {
             var cardDrawn = _rng.Next(SetCollection.Eldraine.Rares.Draftable);
 
-            if (_debug)
+            if (DEBUG)
             {
                 Console.WriteLine($"Current number of owned draftables: {userCollection.Rares.DraftablesOwned}{Environment.NewLine}Opened rare number {cardDrawn}");
             }
@@ -69,7 +95,11 @@ namespace MTGDraftCollectionCalculator
             if (!userCollection.Rares.ContainsDraftable(cardDrawn))
             {
                 userCollection.Rares.AddDraftable(cardDrawn);
-                Console.WriteLine($"Adding card {cardDrawn} to collection");
+
+                if (DEBUG)
+                {
+                    Console.WriteLine($"Adding card {cardDrawn} to collection");
+                }
             }
         }
 
@@ -85,7 +115,7 @@ namespace MTGDraftCollectionCalculator
                 userCollection.Rares.AddNonDraftable(i);
             }
 
-            for(int i = 0; i < draftablesOwned; i++)
+            for (int i = 0; i < draftablesOwned; i++)
             {
                 userCollection.Rares.AddDraftable(i);
             }
