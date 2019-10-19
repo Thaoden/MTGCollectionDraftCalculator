@@ -6,7 +6,6 @@ To do so, a draft is simulated by opening three packs, assuming only the first p
 As soon as the owned boosters exceed the amount of missing cards, the estimation stops.
 
 The first version makes some very naive assumptions:
-* Assume there is a single set of cards (when in reality, 4 sets of all cards can be collected)
 * Do not use wildcards
 * Do not take into account mythics
 * Every draft pack has exactly one rare
