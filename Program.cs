@@ -20,11 +20,11 @@ namespace MTGDraftCollectionCalculator
         {
             var eldraineCards = await MtgJsonHelper.GetEldraineSet();
 
-            var lookup = eldraineCards.Where(c => c.Rarity == Rarity.Rare).ToLookup(c => c.IsStarter);
-            var rareBoosterSetCollection = lookup[false].ToDictionary(c => c.Name, c => 0);
-            var rareNonBoosterSetCollection = lookup[true].ToDictionary(c => c.Name, c => 0);
+            var rareCards = eldraineCards.Where(c => c.Rarity == Rarity.Rare).ToLookup(c => c.IsStarter);
+            var rareDraftableSetCollection = rareCards[false].Select(c => c.Name).ToList();
+            var rareNondraftableSetCollection = rareCards[true].ToDictionary(c => c.Name, c => 0);
 
-            var userCollection = createUserCollection();
+            var userCollection = createUserCollection(rareDraftableSetCollection);
             Console.WriteLine(userCollection.ToString());
 
             int draftsNeeded = calculateDrafts(userCollection);
@@ -74,41 +74,33 @@ namespace MTGDraftCollectionCalculator
 
         private static void simulateSinglePack(UserCollection userCollection)
         {
-            var cardDrawn = _rng.Next(SetCollection.Eldraine.Rares.Draftable);
+            var allCardNames = userCollection.Rares.GetCardNames(draftable: true);
+            var cardDrawnIndex = _rng.Next(allCardNames.Count);
+            var drawnCardName = allCardNames[cardDrawnIndex];
 
             if (DEBUG)
             {
-                Console.WriteLine($"Current number of owned draftables: {userCollection.Rares.DraftablesOwned}{Environment.NewLine}Opened rare number {cardDrawn}");
+                Console.WriteLine($"Current number of owned draftables: {userCollection.Rares.DraftablesOwned}{Environment.NewLine}Opened rare number {cardDrawnIndex}");
             }
 
-            if (!userCollection.Rares.ContainsDraftable(cardDrawn))
+            if (!userCollection.Rares.IsCompletePlayset(drawnCardName))
             {
-                userCollection.Rares.AddDraftable(cardDrawn);
+                userCollection.Rares.AddDraftable(drawnCardName);
 
                 if (DEBUG)
                 {
-                    Console.WriteLine($"Adding card {cardDrawn} to collection");
+                    Console.WriteLine($"Adding card {drawnCardName} to collection");
                 }
             }
         }
 
 
-        private static UserCollection createUserCollection()
+        private static UserCollection createUserCollection(List<string> rareDraftableSetCollectionCardNames)
         {
-            var userCollection = new UserCollection();
-            int nonDraftablesOwned = 0;
-            int draftablesOwned = 31;
+            var userCollection = new UserCollection(rareDraftableSetCollectionCardNames);
 
-            for (int i = 0; i < nonDraftablesOwned; i++)
-            {
-                userCollection.Rares.AddNonDraftable(i);
-            }
 
-            for (int i = 0; i < draftablesOwned; i++)
-            {
-                userCollection.Rares.AddDraftable(i);
-            }
-            userCollection.BoosterPacksOwned = 33;
+            userCollection.BoosterPacksOwned = 0;
             userCollection.Wildcards.Owned = 0;
             userCollection.Wildcards.Progress = 0;
 

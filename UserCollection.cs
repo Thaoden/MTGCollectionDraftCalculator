@@ -7,18 +7,21 @@ namespace MTGDraftCollectionCalculator
 {
     public class UserCollection
     {
-        public UserRareCollection Rares { get; } = new UserRareCollection();
+        public UserRareCollection Rares { get; }
         public UserWildcardCollection Wildcards { get; } = new UserWildcardCollection();
 
         public int BoosterPacksOwned { get; set; }
 
-        public UserCollection()
+        public UserCollection(List<string> rareDraftableSetCollectionCardNames)
         {
+            Rares = new UserRareCollection(rareDraftableSetCollectionCardNames);
             BoosterPacksOwned = 0;
         }
 
         public UserCollection(UserCollection sourceCollection)
         {
+            Rares = new UserRareCollection(sourceCollection.Rares.GetCardNames(draftable: true));
+
             foreach(var collected in sourceCollection.Rares.CollectedDraftables)
             {
                 Rares.AddDraftable(collected);
@@ -57,21 +60,42 @@ namespace MTGDraftCollectionCalculator
 
     public class UserRareCollection
     {
-        private readonly int[] _draftableCollection = new int[SetCollection.Eldraine.Rares.Draftable];
+        private const int CARDS_PER_PLAYSET = 4;
+
+        private readonly Dictionary<string, int> _draftableCollection = new Dictionary<string, int>();
         private readonly int[] _nondraftableCollection = new int[SetCollection.Eldraine.Rares.NonDraftable];
 
+        public UserRareCollection(List<string> rareDraftableSetCollectionCardNames)
+        {
+            _draftableCollection = rareDraftableSetCollectionCardNames.ToDictionary(kvp => kvp, kvp => 0);
+        }
+
         public int NonDraftablesOwned { get => _nondraftableCollection.Sum(); }
-        public int DraftablesOwned { get => _draftableCollection.Sum(); }
+        public int DraftablesOwned { get => _draftableCollection.Sum(kvp => kvp.Value); }
         public int DraftablesNeeded { get => SetCollection.Eldraine.Rares.Draftable - DraftablesOwned; }
         public int NonDraftablesNeeded { get => SetCollection.Eldraine.Rares.NonDraftable - NonDraftablesOwned; }
 
-        public bool ContainsDraftable(int cardNumber) => _draftableCollection[cardNumber] != 0;
+        public List<string> GetCardNames(bool draftable)
+        {
+            if (draftable)
+            {
+                return _draftableCollection.Select(kvp => kvp.Key).ToList();
+            }
+            else
+            {
+                return new List<string>();
+            }
+        }
+
+        public bool ContainsDraftable(string cardName) => _draftableCollection[cardName] != 0;
         public bool ContainsNonDraftable(int cardNumber) => _nondraftableCollection[cardNumber] != 0;
 
-        public int AddDraftable(int cardNumber)
+        public bool IsCompletePlayset(string cardName) => _draftableCollection[cardName] == CARDS_PER_PLAYSET;
+
+        public int AddDraftable(string cardName)
         {
-            _draftableCollection[cardNumber]++;
-            return _draftableCollection[cardNumber];
+            _draftableCollection[cardName]++;
+            return _draftableCollection[cardName];
         }
 
         public int AddNonDraftable(int cardNumber)
@@ -80,7 +104,7 @@ namespace MTGDraftCollectionCalculator
             return _nondraftableCollection[cardNumber];
         }
 
-        public IEnumerable<int> CollectedDraftables => _draftableCollection.Select((cd, idx) => new { cd, idx }).Where(x => x.cd != 0).Select(x => x.idx);
+        public IEnumerable<string> CollectedDraftables => _draftableCollection.Where(kvp => kvp.Value != 0).Select(kvp => kvp.Key);
         public IEnumerable<int> CollectedNonDraftables => _nondraftableCollection.Select((cd, idx) => new { cd, idx }).Where(x => x.cd != 0).Select(x => x.idx);
     }
 
