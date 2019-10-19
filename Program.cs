@@ -20,11 +20,7 @@ namespace MTGDraftCollectionCalculator
         {
             var eldraineCards = await MtgJsonHelper.GetEldraineSet();
 
-            var rareCards = eldraineCards.Where(c => c.Rarity == Rarity.Rare).ToLookup(c => c.IsStarter);
-            var rareDraftableSetCollection = rareCards[false].Select(c => c.Name).ToList();
-            var rareNondraftableSetCollection = rareCards[true].ToDictionary(c => c.Name, c => 0);
-
-            var userCollection = createUserCollection(rareDraftableSetCollection);
+            var userCollection = createUserCollection(eldraineCards);
             Console.WriteLine(userCollection.ToString());
 
             int draftsNeeded = calculateDrafts(userCollection);
@@ -74,9 +70,9 @@ namespace MTGDraftCollectionCalculator
 
         private static void simulateSinglePack(UserCollection userCollection)
         {
-            var allCardNames = userCollection.Rares.GetCardNames(draftable: true);
-            var cardDrawnIndex = _rng.Next(allCardNames.Count);
-            var drawnCardName = allCardNames[cardDrawnIndex];
+            var allDraftableCardNames = userCollection.Rares.GetCardNames(draftable: true);
+            var cardDrawnIndex = _rng.Next(allDraftableCardNames.Count);
+            var drawnCardName = allDraftableCardNames[cardDrawnIndex];
 
             if (DEBUG)
             {
@@ -85,7 +81,7 @@ namespace MTGDraftCollectionCalculator
 
             if (!userCollection.Rares.IsCompletePlayset(drawnCardName))
             {
-                userCollection.Rares.AddDraftable(drawnCardName);
+                userCollection.Rares.AddCard(drawnCardName, draftable: true);
 
                 if (DEBUG)
                 {
@@ -95,9 +91,9 @@ namespace MTGDraftCollectionCalculator
         }
 
 
-        private static UserCollection createUserCollection(List<string> rareDraftableSetCollectionCardNames)
+        private static UserCollection createUserCollection(List<Card> eldraineCards)
         {
-            var userCollection = new UserCollection(rareDraftableSetCollectionCardNames);
+            var userCollection = new UserCollection(eldraineCards);
 
 
             userCollection.BoosterPacksOwned = 0;
