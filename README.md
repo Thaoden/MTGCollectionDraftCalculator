@@ -5,7 +5,7 @@ This calculator attempts to estimate the number of BO1 drafts needed to complete
 To do so, a draft is simulated by opening three packs, assuming only the first pick presents a rare. During a draft, as there is no duplicate protection, this rare can be any rare of the complete (draftable) set. A random card is created and checked against the current collection if it is a duplicate. If this is not the case, it is added the collection. After each draft, the amount of boosters owned is incremented by one.
 As soon as the owned boosters exceed the amount of missing cards, the estimation stops.
 
-The first version makes some very naive assumptions:
+The current version makes some very naive assumptions:
 * Do not use wildcards
 * Do not take into account mythics
 * Every draft pack has exactly one rare
