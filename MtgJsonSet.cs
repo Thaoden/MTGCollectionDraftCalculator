@@ -61,6 +61,10 @@ namespace MTGDraftCollectionCalculator
         public bool IsPromo { get; set; }
         public bool IsReprint { get; set; }
         public bool IsReserved { get; set; }
+        /**
+         * <summary>Is this card found in a booster pack?<para />
+         * Returns True when the card is draftable only, False when the card is also found in a booster pack.</summary>
+         */
         public bool IsStarter { get; set; }
         public bool IsStorySpotlight { get; set; }
         public bool IsTextless { get; set; }
@@ -130,8 +134,8 @@ namespace MTGDraftCollectionCalculator
         public string Duel { get; set; } = String.Empty;
         public string Future { get; set; } = String.Empty;
         public string Frontier { get; set; } = String.Empty;
-        public string Legacy{ get; set; } = String.Empty;
-        public string Modern{ get; set; } = String.Empty;
+        public string Legacy { get; set; } = String.Empty;
+        public string Modern { get; set; } = String.Empty;
         public string Pauper { get; set; } = String.Empty;
         public string Penny { get; set; } = String.Empty;
         public string Standard { get; set; } = String.Empty;
@@ -190,5 +194,43 @@ namespace MTGDraftCollectionCalculator
         public string Type { get; set; } = String.Empty;
         public string Uuid { get; set; } = String.Empty;
         public string Watermark { get; set; } = String.Empty;
+    }
+
+    internal class Rarity : IEquatable<Rarity>
+    {
+        internal static Rarity Rare = new Rarity("Rare");
+
+        private readonly string _rarity;
+
+        private Rarity(string rarity)
+        {
+            _rarity = rarity;
+        }
+
+        #region IEquatableImplementation
+
+        public override bool Equals(object? obj)
+        {
+            if(obj is Rarity r)
+            {
+                return Equals(r);
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode() => _rarity.GetHashCode();
+
+        public bool Equals(Rarity other) => _rarity.Equals(other._rarity, StringComparison.CurrentCultureIgnoreCase);
+
+        public static bool operator ==(Rarity me, Rarity other) => me.Equals(other);
+
+        public static bool operator !=(Rarity me, Rarity other) => !me.Equals(other);
+
+        public static bool operator ==(string me, Rarity other) => (new Rarity(me)).Equals(other);
+
+        public static bool operator !=(string me, Rarity other) => !(new Rarity(me)).Equals(other);
+
+        #endregion
     }
 }

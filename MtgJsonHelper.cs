@@ -13,7 +13,7 @@ namespace MTGDraftCollectionCalculator
     {
         private readonly static string _fileName = "ELD.json";
 
-        internal static async Task<Dictionary<string, Card>> GetEldraineSet()
+        internal static async Task<List<Card>> GetEldraineSet()
         {
             Console.WriteLine("Checking set json existence");
             if (!File.Exists(_fileName))
@@ -57,18 +57,18 @@ namespace MTGDraftCollectionCalculator
             await File.WriteAllTextAsync(_fileName, json);
         }
 
-        private static Dictionary<string, Card> aggregateDuplicateEntries(MtgJsonSet completeSet)
+        private static List<Card> aggregateDuplicateEntries(MtgJsonSet completeSet)
         {
-            var returnDictionary = new Dictionary<string, Card>();
+            var cardDictionary = new Dictionary<string, Card>();
             foreach (var card in completeSet.Cards.Where(c => c.IsArena))
             {
-                if (!returnDictionary.ContainsKey(card.Name) && !returnDictionary.Values.Select(c => c.Number).Any(n => n == card.Number))
+                if (!cardDictionary.ContainsKey(card.Name) && !cardDictionary.Values.Select(c => c.Number).Any(n => n == card.Number))
                 {
-                    returnDictionary.Add(card.Name, card);
+                    cardDictionary.Add(card.Name, card);
                 }
             }
 
-            return returnDictionary;
+            return cardDictionary.Values.ToList();
         }
     }
 }

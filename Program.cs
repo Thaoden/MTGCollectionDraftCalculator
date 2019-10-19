@@ -14,9 +14,15 @@ namespace MTGDraftCollectionCalculator
         private const int AMOUNT_OF_SIMULATIONS = 1000;
         private const bool DEBUG = false;
 
+        private readonly string _userCollectionFilename = "mtgcollection.csv";
+
         static async Task Main(string[] args)
         {
             var eldraineCards = await MtgJsonHelper.GetEldraineSet();
+
+            var lookup = eldraineCards.Where(c => c.Rarity == Rarity.Rare).ToLookup(c => c.IsStarter);
+            var rareBoosterSetCollection = lookup[false].ToDictionary(c => c.Name, c => 0);
+            var rareNonBoosterSetCollection = lookup[true].ToDictionary(c => c.Name, c => 0);
 
             var userCollection = createUserCollection();
             Console.WriteLine(userCollection.ToString());
@@ -25,6 +31,8 @@ namespace MTGDraftCollectionCalculator
 
             Console.WriteLine($"Estimated runs to complete the rare collection: {draftsNeeded}");
         }
+
+
 
 
         private static int calculateDrafts(UserCollection userCollection)
