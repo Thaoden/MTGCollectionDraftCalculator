@@ -1,25 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace MTGDraftCollectionCalculator
 {
     public class UserCollection
     {
-        public UserRareCollection Rares { get; } = new UserRareCollection();
+        public UserRareCollection Rares { get; }
         public UserWildcardCollection Wildcards { get; } = new UserWildcardCollection();
 
         public int BoosterPacksOwned { get; set; }
 
-        public UserCollection()
+        public UserCollection(List<MtgJson.Card> eldraineCards)
         {
+            var rareCards = eldraineCards.Where(c => c.Rarity == Rarity.Rare).ToLookup(c => c.IsStarter);
+            Rares = new UserRareCollection(rareCards);
             BoosterPacksOwned = 0;
         }
 
         public UserCollection(UserCollection sourceCollection)
         {
-            Rares.DraftablesOwned = sourceCollection.Rares.DraftablesOwned;
-            Rares.NonDraftablesOwned = sourceCollection.Rares.NonDraftablesOwned;
+            Rares = new UserRareCollection(sourceCollection.Rares.GetCardNames(draftable: true), sourceCollection.Rares.GetCardNames(draftable: false));
+
+            foreach (var collected in sourceCollection.Rares.CollectedCards)
+            {
+                Rares.AddCard(collected);
+            }
 
             Wildcards.Owned = sourceCollection.Wildcards.Owned;
             Wildcards.Progress = sourceCollection.Wildcards.Progress;
@@ -37,7 +44,8 @@ namespace MTGDraftCollectionCalculator
             sb.Append($"------{Environment.NewLine}");
             sb.Append($"\t\tOwned\tNeeded{Environment.NewLine}");
             sb.Append($"Draftable:\t{Rares.DraftablesOwned}\t{Rares.DraftablesNeeded}{Environment.NewLine}");
-            sb.Append($"Non-Draftable:\t{Rares.NonDraftablesOwned}\t{Rares.NonDraftablesNeeded}{Environment.NewLine}{Environment.NewLine}");
+            sb.Append($"Non-Draftable:\t{Rares.NonDraftablesOwned}\t{Rares.NonDraftablesNeeded}{Environment.NewLine}");
+            sb.Append($"Total:\t\t{Rares.DraftablesOwned + Rares.NonDraftablesOwned}\t{Rares.DraftablesNeeded + Rares.NonDraftablesNeeded}{Environment.NewLine}{Environment.NewLine}");
 
             sb.Append($"Boosters{Environment.NewLine}".ToUpper());
             sb.Append($"------{Environment.NewLine}");
@@ -50,10 +58,55 @@ namespace MTGDraftCollectionCalculator
 
     public class UserRareCollection
     {
-        public int NonDraftablesOwned { get; set; }
-        public int DraftablesOwned { get; set; }
-        public int DraftablesNeeded { get => SetCollection.Eldraine.Rares.Draftable - DraftablesOwned; }
-        public int NonDraftablesNeeded { get => SetCollection.Eldraine.Rares.NonDraftable - NonDraftablesOwned; }
+        private const int CARDS_PER_PLAYSET = 4;
+
+        private readonly Dictionary<string, int> _draftableCollection = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _nondraftableCollection = new Dictionary<string, int>();
+
+        public UserRareCollection(ILookup<bool, MtgJson.Card> rareCards)
+        {
+            _draftableCollection = rareCards[false].Select(c => c.Name).ToDictionary(c => c, c => 0);
+            _nondraftableCollection = rareCards[true].Select(c => c.Name).ToDictionary(c => c, c => 0);
+        }
+
+        public UserRareCollection(List<string> draftableCardNames, List<string> nonDraftableCardNames)
+        {
+            _draftableCollection = draftableCardNames.ToDictionary(kvp => kvp, kvp => 0);
+            _nondraftableCollection = nonDraftableCardNames.ToDictionary(kvp => kvp, kvp => 0);
+        }
+
+        public int NonDraftablesOwned { get => _nondraftableCollection.Sum(kvp => kvp.Value); }
+        public int DraftablesOwned { get => _draftableCollection.Sum(kvp => kvp.Value); }
+        public int DraftablesNeeded { get => _draftableCollection.Count * CARDS_PER_PLAYSET - DraftablesOwned; }
+        public int NonDraftablesNeeded { get => _nondraftableCollection.Count * CARDS_PER_PLAYSET - NonDraftablesOwned; }
+
+        public List<string> GetCardNames(bool draftable) =>
+            draftable
+                ? _draftableCollection.Select(kvp => kvp.Key).ToList()
+                : _nondraftableCollection.Select(kvp => kvp.Key).ToList();
+
+        public bool IsCompletePlayset(string cardName) => _draftableCollection[cardName] == CARDS_PER_PLAYSET;
+
+        public int AddCard(string cardName)
+        {
+            return _nondraftableCollection.Keys.Contains(cardName)
+                ? addNonDraftable(cardName)
+                : addDraftable(cardName);
+        }
+
+        private int addDraftable(string cardName)
+        {
+            _draftableCollection[cardName]++;
+            return _draftableCollection[cardName];
+        }
+
+        private int addNonDraftable(string cardName)
+        {
+            _nondraftableCollection[cardName]++;
+            return _nondraftableCollection[cardName];
+        }
+
+        public List<string> CollectedCards => _draftableCollection.Union(_nondraftableCollection).Where(kvp => kvp.Value != 0).Select(kvp => kvp.Key).ToList();
     }
 
     public class UserWildcardCollection
