@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace MTGDraftCollectionCalculator
+namespace MTGDraftCollectionCalculator.MtgJson
 {
     internal class MtgJsonHelper
     {
@@ -60,7 +60,7 @@ namespace MTGDraftCollectionCalculator
         private static List<Card> aggregateDuplicateEntries(MtgJsonSet completeSet)
         {
             var cardDictionary = new Dictionary<string, Card>();
-            foreach (var card in completeSet.Cards.Where(c => c.IsArena))
+            foreach (var card in completeSet.Cards.Where(c => c.IsArena && (String.IsNullOrEmpty(c.Side) || c.Side == "a")))
             {
                 if (!cardDictionary.ContainsKey(card.Name) && !cardDictionary.Values.Select(c => c.Number).Any(n => n == card.Number))
                 {
