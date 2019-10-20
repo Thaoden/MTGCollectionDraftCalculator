@@ -34,4 +34,5 @@ A later version will also try to recommend where to spend the currencies, drafti
 Not all cards from the collection can be drafted, some rares have to be created by using wildcards. In ELD, there are 276 rares in total, 212 in draft packs (4x 69; 4x 53).
 
 
+# Thanks
 This project is powered by [MTGATool](https://mtgatool.com/). Big thanks for providing me with their data!
