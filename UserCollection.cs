@@ -12,12 +12,33 @@ namespace MTGDraftCollectionCalculator
 
         public int BoosterPacksOwned { get; set; }
 
-        public UserCollection(List<MtgJson.Card> eldraineCards)
+        internal static UserCollection CreateUserCollection(List<MtgaTool.DatabaseCard> setCollection, List<(MtgaTool.DatabaseCard card, int cardsOwned)> ownedCards)
         {
-            var rareCards = eldraineCards.Where(c => c.Rarity == Rarity.Rare).ToLookup(c => c.IsStarter);
+            var userCollection = new UserCollection(setCollection);
+
+            foreach (var (card, cardsOwned) in ownedCards.Where(oc => oc.card.Rarity == Rarity.Rare).ToList())
+            {
+                for (int i = 0; i < cardsOwned; i++)
+                {
+                    userCollection.Rares.AddCard(card.Name);
+                }
+            }
+
+            userCollection.BoosterPacksOwned = 35;
+            userCollection.Wildcards.Owned = 0;
+            userCollection.Wildcards.Progress = 0;
+
+            return userCollection;
+        }
+
+
+        private UserCollection(List<MtgaTool.DatabaseCard> setCollection)
+        {
+            var rareCards = setCollection.Where(c => c.Rarity == Rarity.Rare).ToLookup(c => c.Booster);
             Rares = new UserRareCollection(rareCards);
             BoosterPacksOwned = 0;
         }
+
 
         public UserCollection(UserCollection sourceCollection)
         {
@@ -56,6 +77,7 @@ namespace MTGDraftCollectionCalculator
         }
     }
 
+
     public class UserRareCollection
     {
         private const int CARDS_PER_PLAYSET = 4;
@@ -63,11 +85,13 @@ namespace MTGDraftCollectionCalculator
         private readonly Dictionary<string, int> _draftableCollection = new Dictionary<string, int>();
         private readonly Dictionary<string, int> _nondraftableCollection = new Dictionary<string, int>();
 
-        public UserRareCollection(ILookup<bool, MtgJson.Card> rareCards)
+
+        public UserRareCollection(ILookup<bool, MtgaTool.DatabaseCard> rareCards)
         {
-            _draftableCollection = rareCards[false].Select(c => c.Name).ToDictionary(c => c, c => 0);
-            _nondraftableCollection = rareCards[true].Select(c => c.Name).ToDictionary(c => c, c => 0);
+            _draftableCollection = rareCards[true].ToDictionary(c => c.Name, c => 0);
+            _nondraftableCollection = rareCards[false].ToDictionary(c => c.Name, c => 0);
         }
+
 
         public UserRareCollection(List<string> draftableCardNames, List<string> nonDraftableCardNames)
         {
@@ -80,12 +104,15 @@ namespace MTGDraftCollectionCalculator
         public int DraftablesNeeded { get => _draftableCollection.Count * CARDS_PER_PLAYSET - DraftablesOwned; }
         public int NonDraftablesNeeded { get => _nondraftableCollection.Count * CARDS_PER_PLAYSET - NonDraftablesOwned; }
 
+
         public List<string> GetCardNames(bool draftable) =>
             draftable
                 ? _draftableCollection.Select(kvp => kvp.Key).ToList()
                 : _nondraftableCollection.Select(kvp => kvp.Key).ToList();
 
+
         public bool IsCompletePlayset(string cardName) => _draftableCollection[cardName] == CARDS_PER_PLAYSET;
+
 
         public int AddCard(string cardName)
         {
@@ -94,17 +121,20 @@ namespace MTGDraftCollectionCalculator
                 : addDraftable(cardName);
         }
 
+
         private int addDraftable(string cardName)
         {
             _draftableCollection[cardName]++;
             return _draftableCollection[cardName];
         }
 
+
         private int addNonDraftable(string cardName)
         {
             _nondraftableCollection[cardName]++;
             return _nondraftableCollection[cardName];
         }
+
 
         public List<string> CollectedCards => _draftableCollection.Union(_nondraftableCollection).Where(kvp => kvp.Value != 0).Select(kvp => kvp.Key).ToList();
     }
