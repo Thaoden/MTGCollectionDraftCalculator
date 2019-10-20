@@ -5,6 +5,7 @@
 
 mtgcollection.csv
 ELD.json
+database.json
 
 # User-specific files
 *.suo

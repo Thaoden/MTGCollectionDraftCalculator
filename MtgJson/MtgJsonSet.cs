@@ -77,7 +77,7 @@ namespace MTGDraftCollectionCalculator.MtgJson
         public string ManaCost { get; set; } = String.Empty;
         public int McmId { get; set; }
         public int McmMetaId { get; set; }
-        public int McmArenaId { get; set; }
+        public int MtgArenaId { get; set; }
         public int MtgoFoilId { get; set; }
         public int MtgoId { get; set; }
         public int MtgoStocksId { get; set; }

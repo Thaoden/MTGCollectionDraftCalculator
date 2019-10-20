@@ -30,7 +30,7 @@ namespace MTGDraftCollectionCalculator.MtgJson
             var jsonSerializerOptions = new JsonSerializerOptions
             {
                 IgnoreNullValues = true,
-                PropertyNameCaseInsensitive = true,
+                PropertyNameCaseInsensitive = true
             };
             var json = await File.ReadAllTextAsync(_fileName);
             var eldraineSet = JsonSerializer.Deserialize<MtgJsonSet>(json, jsonSerializerOptions);
