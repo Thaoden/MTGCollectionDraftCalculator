@@ -3,9 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-mtgcollection.csv
-ELD.json
-database.json
+**/mtgcollection.csv
+**/ELD.json
+**/database.json
 
 # User-specific files
 *.suo

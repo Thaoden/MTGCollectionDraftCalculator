@@ -12,6 +12,13 @@ namespace MTGDraftCollectionCalculator
 {
     class Program
     {
+        /*
+        <== PlayerInventory.GetPlayerSequenceData
+<== Event.GetActiveEventsV2
+<== PlayerInventory.GetPlayerInventory
+<== Event.GetPlayerCoursesV2
+<== PlayerInventory.GetProductCatalog
+         */
         private const int AMOUNT_OF_SIMULATIONS = 1000;
         private const bool DEBUG = false;
 

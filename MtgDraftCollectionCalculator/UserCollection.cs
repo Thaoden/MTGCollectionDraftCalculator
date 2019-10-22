@@ -24,7 +24,7 @@ namespace MTGDraftCollectionCalculator
                 }
             }
 
-            userCollection.BoosterPacksOwned = 35;
+            userCollection.BoosterPacksOwned = 38;
             userCollection.Wildcards.Owned = 0;
             userCollection.Wildcards.Progress = 0;
 
