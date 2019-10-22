@@ -35,6 +35,13 @@ namespace MTGDraftCollectionCalculator.MtgaTool
             return mtb.Cards.Where(c => c.Value.Set == "Throne of Eldraine").Select(kvp => kvp.Value).ToList();
         }
 
+        internal async Task<List<(string Name, Set Set)>> GetAllSetsDetails()
+        {
+            var mtb = await getLatestMtgaToolDatabase();
+
+            return mtb.Sets.Select(kvp => (kvp.Key, kvp.Value)).ToList();
+        }
+
         private async Task<MtgaToolDatabase> getLatestMtgaToolDatabase()
         {
             var dvi = await getDatabaseVersionInfo();
@@ -142,12 +149,22 @@ namespace MTGDraftCollectionCalculator.MtgaTool
         public double Updated { get; set; }
         public List<object> Events { get; set; } = new List<object>();
         public List<object> EventsFormat { get; set; } = new List<object>();
-        public List<object> Sets { get; set; } = new List<object>();
+        public Dictionary<string, Set> Sets { get; set; } = new Dictionary<string, Set>();
         public List<object> Abilities { get; set; } = new List<object>();
         public List<object> LimitedRankedEvents { get; set; } = new List<object>();
         public List<object> StandardRankedEvents { get; set; } = new List<object>();
         public List<object> SingleMatchEvents { get; set; } = new List<object>();
         public List<object> Archetypes { get; set; } = new List<object>();
+    }
+
+    public class Set
+    {
+        public JsonElement Collation { get; set; }
+        public string Scryfall { get; set; } = String.Empty;
+        public string Code { get; set; } = String.Empty;
+        public string ArenaCode { get; set; } = String.Empty;
+        public int Tile { get; set; }
+        public string Release { get; set; } = String.Empty;
     }
 
     public class DatabaseCard

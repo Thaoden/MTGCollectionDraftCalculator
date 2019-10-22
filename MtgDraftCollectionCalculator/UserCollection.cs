@@ -12,7 +12,7 @@ namespace MTGDraftCollectionCalculator
 
         public int BoosterPacksOwned { get; set; }
 
-        internal static UserCollection CreateUserCollection(List<MtgaTool.DatabaseCard> setCollection, List<(MtgaTool.DatabaseCard card, int cardsOwned)> ownedCards)
+        internal static UserCollection CreateUserCollection(List<MtgaTool.DatabaseCard> setCollection, List<(MtgaTool.DatabaseCard card, int cardsOwned)> ownedCards, int boosterCount)
         {
             var userCollection = new UserCollection(setCollection);
 
@@ -24,7 +24,7 @@ namespace MTGDraftCollectionCalculator
                 }
             }
 
-            userCollection.BoosterPacksOwned = 38;
+            userCollection.BoosterPacksOwned = boosterCount;
             userCollection.Wildcards.Owned = 0;
             userCollection.Wildcards.Progress = 0;
 

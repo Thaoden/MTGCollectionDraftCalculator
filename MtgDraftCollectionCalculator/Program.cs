@@ -24,12 +24,20 @@ namespace MTGDraftCollectionCalculator
 
         static async Task Main(string[] args)
         {
-            var eldraineSetCardsFromMtgaTool = await getCompleteSetFromMtgaToolAsync();
+            var mtgaLogHelper = new MtgaLogParser.MtgaLogHelper();
+            var ownedCardsFromMtgaLog = await mtgaLogHelper.GetOwnedCardCollection();
+            var playerInventory = await mtgaLogHelper.GetPlayerInventory();
+
+            using var helper = new MtgaTool.MtgaToolDatabaseHelper();
+            var eldraineSetCardsFromMtgaTool = await helper.GetEldraineSetAsync();
+
             var eldraineSetWithoutAdventures = eldraineSetCardsFromMtgaTool.Where(c => !c.Type.Contains("Adventure")).ToList();
+            var ownedCards = getOwnedCardsInSetCollectionAsync(ownedCardsFromMtgaLog, eldraineSetCardsFromMtgaTool);
 
-            var ownedCards = await getOwnedCardsInSetCollectionAsync(eldraineSetCardsFromMtgaTool);
+            var allSetsFromMtgaTool = await helper.GetAllSetsDetails();
+            int eldraineBoosters = playerInventory.Boosters.Single(b => b.CollationId == allSetsFromMtgaTool.Single(s => s.Set.ArenaCode == "ELD").Set.Collation.GetInt32()).Count;
 
-            var userCollection = UserCollection.CreateUserCollection(eldraineSetWithoutAdventures, ownedCards);
+            var userCollection = UserCollection.CreateUserCollection(eldraineSetWithoutAdventures, ownedCards, eldraineBoosters);
             Console.WriteLine(userCollection.ToString());
 
             int draftsNeeded = estimateNeededDrafts(userCollection);
@@ -45,32 +53,14 @@ namespace MTGDraftCollectionCalculator
         }
 
 
-        private static async Task<List<(MtgaTool.DatabaseCard Card, int CardsOwned)>> getOwnedCardsInSetCollectionAsync(List<MtgaTool.DatabaseCard> eldraineSetCardsFromMtgaTool)
+        private static List<(MtgaTool.DatabaseCard Card, int CardsOwned)> getOwnedCardsInSetCollectionAsync(List<(int CardIndex, int CardsOwned)> ownedCardsFromMtgaLog, List<MtgaTool.DatabaseCard> eldraineSetCardsFromMtgaTool)
         {
-            var ownedCardsFromMtgaLog = await getOwnedCardsFromMtgaLog();
-
             var ownedCards = ownedCardsFromMtgaLog
                 .Where(ownedCard => eldraineSetCardsFromMtgaTool.Select(c => c.Id).Contains(ownedCard.CardIndex))
                 .Select(item => (eldraineSetCardsFromMtgaTool.Single(c => c.Id == item.CardIndex), item.CardsOwned))
                 .ToList();
 
             return ownedCards;
-        }
-
-
-        private static async Task<List<(int CardIndex, int CardsOwned)>> getOwnedCardsFromMtgaLog()
-        {
-            var mtgaLogHelper = new MtgaLogParser.MtgaLogHelper();
-            return await mtgaLogHelper.GetOwnedCardCollection();
-        }
-
-
-        private static async Task<List<MtgaTool.DatabaseCard>> getCompleteSetFromMtgaToolAsync()
-        {
-            using (var helper = new MtgaTool.MtgaToolDatabaseHelper())
-            {
-                 return await helper.GetEldraineSetAsync();
-            }
         }
     }
 }
