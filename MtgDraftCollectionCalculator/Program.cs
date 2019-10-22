@@ -15,7 +15,7 @@ namespace MTGDraftCollectionCalculator
         /*
         <== PlayerInventory.GetPlayerSequenceData
 <== Event.GetActiveEventsV2
-<== PlayerInventory.GetPlayerInventory
+
 <== Event.GetPlayerCoursesV2
 <== PlayerInventory.GetProductCatalog
          */
@@ -60,8 +60,8 @@ namespace MTGDraftCollectionCalculator
 
         private static async Task<List<(int CardIndex, int CardsOwned)>> getOwnedCardsFromMtgaLog()
         {
-            var mtgaLogHelper = new Mtga.MtgaLogHelper();
-            return await mtgaLogHelper.ParseMtgArenaLog();
+            var mtgaLogHelper = new MtgaLogParser.MtgaLogHelper();
+            return await mtgaLogHelper.GetOwnedCardCollection();
         }
 
 
