@@ -29,13 +29,14 @@ namespace MTGDraftCollectionCalculator
             var playerInventory = await mtgaLogHelper.GetPlayerInventory();
 
             using var helper = new MtgaTool.MtgaToolDatabaseHelper();
-            var eldraineSetCardsFromMtgaTool = await helper.GetEldraineSetAsync();
 
+            var eldraineSetCardsFromMtgaTool = await helper.GetEldraineSetAsync();
             var eldraineSetWithoutAdventures = eldraineSetCardsFromMtgaTool.Where(c => !c.Type.Contains("Adventure")).ToList();
+
             var ownedCards = getOwnedCardsInSetCollectionAsync(ownedCardsFromMtgaLog, eldraineSetCardsFromMtgaTool);
 
-            var allSetsFromMtgaTool = await helper.GetAllSetsDetails();
-            int eldraineBoosters = playerInventory.Boosters.Single(b => b.CollationId == allSetsFromMtgaTool.Single(s => s.Set.ArenaCode == "ELD").Set.Collation.GetInt32()).Count;
+            var eldraineSetCollationId = await helper.GetSetCollationIdByCode("ELD");
+            int eldraineBoosters = playerInventory.Boosters.Single(b => b.CollationId == eldraineSetCollationId).Count;
 
             var userCollection = UserCollection.CreateUserCollection(eldraineSetWithoutAdventures, ownedCards, eldraineBoosters);
             Console.WriteLine(userCollection.ToString());

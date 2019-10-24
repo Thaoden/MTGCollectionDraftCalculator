@@ -137,6 +137,14 @@ namespace MTGDraftCollectionCalculator.MtgaTool
 
             return mtb.Sets.Select(kvp => (kvp.Key, kvp.Value)).ToList();
         }
+
+
+        internal async Task<int> GetSetCollationIdByCode(string arenaSetCode)
+        {
+            var mtb = await _mtgaToolDatabase.Value;
+
+            return mtb.Sets.Single(s => s.Value.ArenaCode == arenaSetCode).Value.Collation.GetInt32();
+        }
     }
 
     public class DatabaseVersionInfo
