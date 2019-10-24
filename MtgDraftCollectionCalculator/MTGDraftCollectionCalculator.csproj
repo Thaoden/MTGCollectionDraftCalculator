@@ -16,4 +16,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MtgaLogParser\MtgaLogParser.csproj" />
+  </ItemGroup>
+
 </Project>

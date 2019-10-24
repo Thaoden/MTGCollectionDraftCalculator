@@ -14,25 +14,23 @@ namespace MTGDraftCollectionCalculator.MtgaTool
         private readonly HttpClient _httpClient;
         private const string DATABASE_FILENAME = "database.json";
 
+        private readonly Lazy<Task<MtgaToolDatabase>> _mtgaToolDatabase;
+
+        #region Construction & Disposal
+
         public MtgaToolDatabaseHelper()
         {
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri("https://mtgatool.com/")
             };
+
+            _mtgaToolDatabase = new Lazy<Task<MtgaToolDatabase>>(getLatestMtgaToolDatabase);
         }
 
         public void Dispose()
         {
             _httpClient?.Dispose();
-        }
-
-        internal async Task<List<DatabaseCard>> GetEldraineSetAsync()
-        {
-
-            MtgaToolDatabase mtb = await getLatestMtgaToolDatabase();
-
-            return mtb.Cards.Where(c => c.Value.Set == "Throne of Eldraine").Select(kvp => kvp.Value).ToList();
         }
 
         private async Task<MtgaToolDatabase> getLatestMtgaToolDatabase()
@@ -123,6 +121,30 @@ namespace MTGDraftCollectionCalculator.MtgaTool
 
             return databaseJson;
         }
+
+        #endregion
+
+        internal async Task<List<DatabaseCard>> GetEldraineSetAsync()
+        {
+            var mtb = await _mtgaToolDatabase.Value;
+
+            return mtb.Cards.Where(c => c.Value.Set == "Throne of Eldraine").Select(kvp => kvp.Value).ToList();
+        }
+
+        internal async Task<List<(string Name, Set Set)>> GetAllSetsDetails()
+        {
+            var mtb = await _mtgaToolDatabase.Value;
+
+            return mtb.Sets.Select(kvp => (kvp.Key, kvp.Value)).ToList();
+        }
+
+
+        internal async Task<int> GetSetCollationIdByCode(string arenaSetCode)
+        {
+            var mtb = await _mtgaToolDatabase.Value;
+
+            return mtb.Sets.Single(s => s.Value.ArenaCode == arenaSetCode).Value.Collation.GetInt32();
+        }
     }
 
     public class DatabaseVersionInfo
@@ -142,12 +164,22 @@ namespace MTGDraftCollectionCalculator.MtgaTool
         public double Updated { get; set; }
         public List<object> Events { get; set; } = new List<object>();
         public List<object> EventsFormat { get; set; } = new List<object>();
-        public List<object> Sets { get; set; } = new List<object>();
+        public Dictionary<string, Set> Sets { get; set; } = new Dictionary<string, Set>();
         public List<object> Abilities { get; set; } = new List<object>();
         public List<object> LimitedRankedEvents { get; set; } = new List<object>();
         public List<object> StandardRankedEvents { get; set; } = new List<object>();
         public List<object> SingleMatchEvents { get; set; } = new List<object>();
         public List<object> Archetypes { get; set; } = new List<object>();
+    }
+
+    public class Set
+    {
+        public JsonElement Collation { get; set; }
+        public string Scryfall { get; set; } = String.Empty;
+        public string Code { get; set; } = String.Empty;
+        public string ArenaCode { get; set; } = String.Empty;
+        public int Tile { get; set; }
+        public string Release { get; set; } = String.Empty;
     }
 
     public class DatabaseCard
