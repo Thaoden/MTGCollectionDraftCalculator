@@ -14,32 +14,23 @@ namespace MTGDraftCollectionCalculator.MtgaTool
         private readonly HttpClient _httpClient;
         private const string DATABASE_FILENAME = "database.json";
 
+        private readonly Lazy<Task<MtgaToolDatabase>> _mtgaToolDatabase;
+
+        #region Construction & Disposal
+
         public MtgaToolDatabaseHelper()
         {
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri("https://mtgatool.com/")
             };
+
+            _mtgaToolDatabase = new Lazy<Task<MtgaToolDatabase>>(getLatestMtgaToolDatabase);
         }
 
         public void Dispose()
         {
             _httpClient?.Dispose();
-        }
-
-        internal async Task<List<DatabaseCard>> GetEldraineSetAsync()
-        {
-
-            MtgaToolDatabase mtb = await getLatestMtgaToolDatabase();
-
-            return mtb.Cards.Where(c => c.Value.Set == "Throne of Eldraine").Select(kvp => kvp.Value).ToList();
-        }
-
-        internal async Task<List<(string Name, Set Set)>> GetAllSetsDetails()
-        {
-            var mtb = await getLatestMtgaToolDatabase();
-
-            return mtb.Sets.Select(kvp => (kvp.Key, kvp.Value)).ToList();
         }
 
         private async Task<MtgaToolDatabase> getLatestMtgaToolDatabase()
@@ -129,6 +120,22 @@ namespace MTGDraftCollectionCalculator.MtgaTool
             }
 
             return databaseJson;
+        }
+
+        #endregion
+
+        internal async Task<List<DatabaseCard>> GetEldraineSetAsync()
+        {
+            var mtb = await _mtgaToolDatabase.Value;
+
+            return mtb.Cards.Where(c => c.Value.Set == "Throne of Eldraine").Select(kvp => kvp.Value).ToList();
+        }
+
+        internal async Task<List<(string Name, Set Set)>> GetAllSetsDetails()
+        {
+            var mtb = await _mtgaToolDatabase.Value;
+
+            return mtb.Sets.Select(kvp => (kvp.Key, kvp.Value)).ToList();
         }
     }
 
