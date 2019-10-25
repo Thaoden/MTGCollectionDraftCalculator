@@ -1,0 +1,15 @@
+Cards
+Mythic 11.5k (1,5%)
+Rare 82,6k (10,9%)
+Uncommon 183k (24,1%)
+Common 482.6k (63,5%)
+
+WC
+Mythic 4,3k (7%)
+Rare 4,2k (6,8%)
+Uncommon 22,2k (36,3%)
+Common 30,5k (49,8%)
+
+Boosters: 58,3k
+
+data for sep 26 from https://mtgarena.pro/mtg-arena-statistics/
