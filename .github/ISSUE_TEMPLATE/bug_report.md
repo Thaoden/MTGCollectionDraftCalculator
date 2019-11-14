@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-** [ ] I have read the [troubleshooting guide](https://foo.bar) **
+[ ] I have read the [troubleshooting guide](https://foo.bar)
 
 **Describe the bug**
 A clear and concise description of what the bug is.
