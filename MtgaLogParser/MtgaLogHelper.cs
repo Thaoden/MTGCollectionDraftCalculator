@@ -10,8 +10,8 @@ namespace MtgaLogParser
 {
     public class MtgaLogHelper
     {
-        private const string BEGIN_GET_PLAYER_CARDS = "<== PlayerInventory.GetPlayerCardsV3";
-        private const string BEGIN_GET_PLAYER_INVENTORY = "<== PlayerInventory.GetPlayerInventory";
+        private const string BEGIN_GET_PLAYER_CARDS = "[UnityCrossThreadLogger]<== PlayerInventory.GetPlayerCardsV3";
+        private const string BEGIN_GET_PLAYER_INVENTORY = "[UnityCrossThreadLogger]<== PlayerInventory.GetPlayerInventory";
 
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
@@ -47,15 +47,25 @@ namespace MtgaLogParser
                 mtgaLogFileContent = await streamReader.ReadToEndAsync();
             }
 
-            var mtgaLogFileContentLines = mtgaLogFileContent.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-            var lastDumpBeginningIndex = Array.IndexOf(mtgaLogFileContentLines, mtgaLogFileContentLines.Last(c => c.StartsWith(beginLogEntryMark)));
-            var lastDumpEndingIndex = Array.IndexOf(mtgaLogFileContentLines.Skip(lastDumpBeginningIndex).ToArray(), "}");
-            var lastDump = mtgaLogFileContentLines.Skip(lastDumpBeginningIndex + 1).Take(lastDumpEndingIndex).ToList();
-            var cardBuilder = new StringBuilder();
-            lastDump.ForEach(line => cardBuilder.Append($"{line}"));
-            var cardJson = cardBuilder.ToString();
+            var mtgaLogFileContentLines = mtgaLogFileContent
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .Where(line => line.StartsWith(beginLogEntryMark))
+                .ToList();
+            //var lastDumpBeginningIndex = Array.IndexOf(mtgaLogFileContentLines, mtgaLogFileContentLines.Last(c => c.StartsWith(beginLogEntryMark)));
+            //var lastDumpEndingIndex = Array.IndexOf(mtgaLogFileContentLines.Skip(lastDumpBeginningIndex).ToArray(), "}");
+            //var lastDump = mtgaLogFileContentLines.Skip(lastDumpBeginningIndex + 1).Take(lastDumpEndingIndex).ToList();
+            //var cardBuilder = new StringBuilder();
+            //lastDump.ForEach(line => cardBuilder.Append($"{line}"));
+            //var cardJson = cardBuilder.ToString();
 
-            return JsonSerializer.Deserialize<T>(cardJson, _jsonSerializerOptions);
+            using var jsonDoc = JsonDocument.Parse(mtgaLogFileContentLines.Last().Replace(beginLogEntryMark, ""));
+
+            var payload = jsonDoc
+                .RootElement
+                .GetProperty("payload")
+                .GetRawText();
+
+            return JsonSerializer.Deserialize<T>(payload, _jsonSerializerOptions);
         }
     }
 
@@ -85,8 +95,7 @@ namespace MtgaLogParser
     {
         public string AvatarSelection { get; set; } = String.Empty;
         public string? CardBackSelection { get; set; }
-        public string? PetSelection { get; set; }
-        public List<string> PetModSelections { get; set; } = new List<string>();
+        public PetVariant PetSelection { get; set; } = new PetVariant();
     }
 
     public class VanityItems
@@ -111,10 +120,10 @@ namespace MtgaLogParser
     public class Pet
     {
         public string Name { get; set; } = String.Empty;
-        public List<PetMod> Mods { get; set; } = new List<PetMod>();
+        public List<string> Variants { get; set; } = new List<string>();
     }
 
-    public class PetMod
+    public class PetVariant
     {
         public string Type { get; set; } = String.Empty;
         public string Value { get; set; } = String.Empty;

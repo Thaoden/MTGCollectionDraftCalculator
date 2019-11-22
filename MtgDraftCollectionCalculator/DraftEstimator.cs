@@ -26,7 +26,7 @@ namespace MTGDraftCollectionCalculator
 
                 var tmpCollection = new UserCollection(userCollection);
 
-                while (tmpCollection.Rares.DraftablesNeeded + tmpCollection.Rares.NonDraftablesNeeded >= tmpCollection.BoosterPacksOwned)
+                while (tmpCollection.Rares.DraftablesNeeded >= tmpCollection.BoosterPacksOwned)
                 {
                     simulateSingleDraft(tmpCollection);
                     tmpDraftsNeeded++;
@@ -46,7 +46,7 @@ namespace MTGDraftCollectionCalculator
 
         private void simulateSingleDraft(UserCollection userCollection)
         {
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 simulateSinglePack(userCollection);
             }
